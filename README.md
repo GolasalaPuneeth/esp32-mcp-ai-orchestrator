@@ -84,7 +84,20 @@ Verify that all services are running:
 * **Mailpit Web Inbox (Inspect sent emails):** `http://localhost:8025`
 * **MQTT Broker:** `localhost:1883`
 
-### 2. Flash the ESP32 Firmware
+### 2. Test the MCP Server with MCP Inspector
+MCP Inspector provides a browser-based sandbox for connecting to the gateway and inspecting its tools, resources, and responses.
+
+1. Start the Inspector from a terminal on your host machine:
+   ```bash
+   npx -y @modelcontextprotocol/inspector
+   ```
+2. Open **[http://localhost:6274/](http://localhost:6274/)** in your browser.
+3. In the Inspector, select **Streamable HTTP** as the transport, enter `http://localhost:8000/mcp` as the server URL, and connect.
+4. Open the **Tools** tab to inspect and call the available tools. Use the **Resources** tab to inspect available resources.
+
+> **Note:** Tool calls can affect your ESP32 hardware, write to the database, or send email. Test only with actions and email addresses you intend to use. The ESP32 must be powered on and connected to the MQTT broker for hardware commands to reach it.
+
+### 3. Flash the ESP32 Firmware
 1. Open `firmware/esp32_mcp_client.ino` in the Arduino IDE or PlatformIO.
 2. Update your Wi-Fi credentials and set `mqtt_server` to your host machine's local IPv4 address (e.g., `192.168.1.50`).
 3. Flash the firmware to your ESP32 DevKit and verify the connection in the Serial Monitor (`115200 baud`).
