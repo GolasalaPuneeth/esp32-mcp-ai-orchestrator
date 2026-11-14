@@ -12,31 +12,35 @@ flowchart TD
 
     subgraph Host["💻 Host Machine"]
         AI["🤖 AI Client (Claude Desktop / VS Code)<br/><i>Coordinates multi-domain MCP tool calls</i>"]
+        Browser["🌐 Browser<br/><i>MCP Inspector UI (Port 6274)</i>"]
     end
 
     subgraph Docker["🐳 Docker Compose Ecosystem"]
         MCP["⚡ Python FastMCP Server (Port 8000)<br/><i>Unified Streamable HTTP MCP Gateway (/mcp)</i>"]
-        
+        Inspector["🔎 MCP Inspector<br/><i>Browser-based tool and resource explorer</i>"]
+
         subgraph DataLayer["Persistence & Messaging"]
             MQTT["📡 Mosquitto MQTT<br/><i>IoT Bus (Port 1883)</i>"]
-            DB[(🗄️ PostgreSQL<br/><i>Audit & Telemetry Logs</i>)]
+            DB[("🗄️ PostgreSQL<br/><i>Audit & Telemetry Logs</i>")]
             SMTP["✉️ Mailpit SMTP<br/><i>Email Relay (Port 1025 | UI: 8025)</i>"]
         end
-        
+
         MCP ==>|"1. Publish Command"| MQTT
         MCP <-->|"2. Read/Write Audit Logs"| DB
         MCP -->|"3. Dispatch Report"| SMTP
+        Inspector -->|"Connect to /mcp"| MCP
     end
 
     subgraph Hardware["🔌 Physical Edge Hardware"]
         ESP["📟 ESP32 DevKit (Wi-Fi)<br/><i>Non-blocking GPIO 2 Toggle</i>"]
         LED(("💡 Onboard LED<br/>(GPIO 2)"))
-        
+
         ESP --- LED
     end
 
     User <==>|"Natural Language Workflow"| AI
     AI <==>|"MCP Protocol (HTTP /mcp)"| MCP
+    Browser -->|"Open Inspector UI"| Inspector
     MQTT ==>|"Topic: esp32/command"| ESP
     ESP -.->|"Topic: esp32/status"| MQTT
 
@@ -48,8 +52,8 @@ flowchart TD
     classDef ledStyle fill:#ffb703,stroke:#fb8500,stroke-width:2px,color:#000;
 
     class User userStyle;
-    class AI aiStyle;
-    class MCP dockerStyle;
+    class AI,Browser aiStyle;
+    class MCP,Inspector dockerStyle;
     class MQTT,DB,SMTP dbStyle;
     class ESP hwStyle;
     class LED ledStyle;
@@ -71,29 +75,26 @@ flowchart TD
 ## 🛠️ Quick Start Guide
 
 ### 1. Start the Docker Infrastructure
-Clone the repository and spin up the FastMCP server, Mosquitto MQTT broker, PostgreSQL database, and Mailpit SMTP server:
+Clone the repository and spin up the FastMCP server, MCP Inspector, Mosquitto MQTT broker, PostgreSQL database, and Mailpit SMTP server:
 
 ```bash
-git clone https://github.com/yourusername/esp32-mcp-iot-controller.git
-cd esp32-mcp-iot-controller
+git clone https://github.com/GolasalaPuneeth/esp32-mcp-ai-orchestrator.git
+cd esp32-mcp-ai-orchestrator
 docker compose up --build -d
 ```
 
 Verify that all services are running:
 * **MCP Endpoint:** `http://localhost:8000/mcp`
+* **MCP Inspector:** `http://localhost:6274/`
 * **Mailpit Web Inbox (Inspect sent emails):** `http://localhost:8025`
 * **MQTT Broker:** `localhost:1883`
 
 ### 2. Test the MCP Server with MCP Inspector
-MCP Inspector provides a browser-based sandbox for connecting to the gateway and inspecting its tools, resources, and responses.
+MCP Inspector is started by Docker Compose, so you do not need to run an `npx` command on your host machine.
 
-1. Start the Inspector from a terminal on your host machine:
-   ```bash
-   npx -y @modelcontextprotocol/inspector
-   ```
-2. Open **[http://localhost:6274/](http://localhost:6274/)** in your browser.
-3. In the Inspector, select **Streamable HTTP** as the transport, enter `http://localhost:8000/mcp` as the server URL, and connect.
-4. Open the **Tools** tab to inspect and call the available tools. Use the **Resources** tab to inspect available resources.
+1. Open **[http://localhost:6274/](http://localhost:6274/)** in your browser.
+2. In the Inspector, select **Streamable HTTP** as the transport, enter `http://localhost:8000/mcp` as the server URL, and connect.
+3. Open the **Tools** tab to inspect and call the available tools. Use the **Resources** tab to inspect available resources.
 
 > **Note:** Tool calls can affect your ESP32 hardware, write to the database, or send email. Test only with actions and email addresses you intend to use. The ESP32 must be powered on and connected to the MQTT broker for hardware commands to reach it.
 
