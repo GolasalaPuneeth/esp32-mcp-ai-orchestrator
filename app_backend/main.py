@@ -1,7 +1,7 @@
 from fastmcp import FastMCP
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
-
+from tools import light,LightDoc,Light
 mcp = FastMCP("My MCP Server")
 
 middleware = [
@@ -21,35 +21,10 @@ middleware = [
 
 mcp.http_app(middleware=middleware)
 
-@mcp.tool
-def greet(name: str) -> str:
-    """Greet a person by name."""
-    print("Using--------->greet")
-    return f"Hello, {name}!"
+light: LightDoc = Light()
 
-
-@mcp.tool
-def echo_text(text: str) -> str:
-    """Return the supplied text unchanged."""
-    print("Using--------->echo")
-    return text
-
-
-@mcp.tool
-def add_numbers(a: float, b: float) -> float:
-    """Add two numbers and return their sum."""
-    print("Using--------->add number")
-
-    return a + b
-
-
-@mcp.tool
-def server_status() -> str:
-    """Return a simple status message to confirm the server is responding."""
-    print("Using--------->server status")
-
-    return "MCP server is working."
-
+mcp.add_tool(light.turn_on_light)
+mcp.add_tool(light.get_status)
 
 if __name__ == "__main__":
     mcp.run(transport="http", host="0.0.0.0", port=8003)
