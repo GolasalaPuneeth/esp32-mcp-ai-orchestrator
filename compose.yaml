@@ -1,4 +1,12 @@
 services:
+  mqtt:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto_mqtt
+    restart: always
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto_mqtt:/mosquitto
   mailpit:
     image: axllent/mailpit:latest
     container_name: mailpit
@@ -16,3 +24,10 @@ services:
       MP_SMTP_RELAY_USERNAME: ${GMAIL_USERNAME}
       MP_SMTP_RELAY_PASSWORD: ${GMAIL_APP_PASSWORD}
   
+
+  fastmcp_app:
+    build: ./app_backend
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./app_backend:/app
