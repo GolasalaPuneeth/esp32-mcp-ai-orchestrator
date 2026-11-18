@@ -31,3 +31,12 @@ services:
       - "8003:8003"
     volumes:
       - ./app_backend:/app
+
+  fastmcp_inspector:
+    build:
+      context: ./app_backend
+      dockerfile: Dockerfile.inspector
+    ports:
+      - "6274:6274"
+    volumes:
+      - ./app_backend:/app

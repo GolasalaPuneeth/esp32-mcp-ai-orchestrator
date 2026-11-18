@@ -1,7 +1,7 @@
 from fastmcp import FastMCP
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
-from tools import light,LightDoc,Light
+from tools import LightDoc,Light,MailServiceDoc,MailService
 mcp = FastMCP("My MCP Server")
 
 middleware = [
@@ -21,10 +21,14 @@ middleware = [
 
 mcp.http_app(middleware=middleware)
 
-light: LightDoc = Light()
+light_obj: LightDoc = Light()
+mail_obj: MailServiceDoc = MailService()
 
-mcp.add_tool(light.turn_on_light)
-mcp.add_tool(light.get_status)
+mcp.add_tool(light_obj.turn_on_light)
+mcp.add_tool(light_obj.get_status)
+mcp.add_tool(light_obj.blink_light)
+mcp.add_tool(mail_obj.send_html_email)
+
 
 if __name__ == "__main__":
     mcp.run(transport="http", host="0.0.0.0", port=8003)

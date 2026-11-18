@@ -1,9 +1,13 @@
 from abc import ABC, abstractmethod
-from fastmcp import FastMCP
 from fastmcp.tools import tool
+from datetime import datetime
 import json
 
-light = FastMCP("Light Controller")
+# light = FastMCP("Light Controller")
+DEVICE_STATUS = {
+    "light_current_status":"off",
+    "last_change": None
+}
 
 class LightDoc(ABC):
     """Abstract interface defining standard lighting capabilities."""
@@ -17,6 +21,16 @@ class LightDoc(ABC):
             switch (bool): True to turn the light ON, False to turn it OFF.
         """
         raise NotImplementedError
+    
+    @abstractmethod
+    async def blink_light(self, times: int) -> bool:
+        """
+        Blink the physical light a specified number of times.
+        
+        Args:
+            times (int): Number of times to cycle the blink.
+        """
+        raise NotImplementedError
 
     @abstractmethod
     async def get_status(self) -> str:
@@ -26,15 +40,22 @@ class LightDoc(ABC):
 
 class Light(LightDoc):
     
-    @tool()  # Attach metadata for programmatic tool registration
+    @tool()  
     async def turn_on_light(self, switch: bool) -> bool:
-        # Your hardware execution logic here (e.g., MQTT publish)
+        print("[get_status] ------> ",switch)
+        DEVICE_STATUS["current_status"]="on"
+        DEVICE_STATUS["last_change"]= datetime.now().isoformat()
+        print(DEVICE_STATUS)
         return True
 
     @tool()
     async def get_status(self) -> str:
-        status_data = {
-            "status": "online",
-            "led_state": "ON"
-        }
-        return json.dumps(status_data, indent=2)
+        print("[get_status] ------> ")
+        return json.dumps(DEVICE_STATUS, indent=2)
+
+    @tool()
+    async def blink_light(self, times):
+        print("[blink_light] ------> ",times)
+        DEVICE_STATUS["current_status"]="blink"
+        DEVICE_STATUS["last_change"]= datetime.now().isoformat()
+        return True

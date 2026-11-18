@@ -1,0 +1,21 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY req.txt ./
+RUN pip install --no-cache-dir -r req.txt
+
+COPY . .
+
+EXPOSE 6274
+
+ENV DANGEROUSLY_OMIT_AUTH=true
+
+# Clean JSON array execution
+CMD ["fastmcp", "dev", "inspector", "main.py:mcp", "-y"]
+# DANGEROUSLY_OMIT_AUTH=true fastmcp dev inspector main.py:mcp -y
