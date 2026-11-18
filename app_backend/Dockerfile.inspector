@@ -18,4 +18,3 @@ ENV DANGEROUSLY_OMIT_AUTH=true
 
 # Clean JSON array execution
 CMD ["fastmcp", "dev", "inspector", "main.py:mcp", "-y"]
-# DANGEROUSLY_OMIT_AUTH=true fastmcp dev inspector main.py:mcp -y
