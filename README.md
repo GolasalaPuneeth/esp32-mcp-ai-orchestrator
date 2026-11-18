@@ -83,7 +83,7 @@ cd esp32-mcp-ai-orchestrator
 docker compose up --build -d
 ```
 
-Verify that all services are running:
+Verify that all services are running on your local machine:
 * **MCP Endpoint:** `http://localhost:8000/mcp`
 * **MCP Inspector:** `http://localhost:6274/`
 * **Mailpit Web Inbox (Inspect sent emails):** `http://localhost:8025`
