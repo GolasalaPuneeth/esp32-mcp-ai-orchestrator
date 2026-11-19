@@ -38,5 +38,6 @@ services:
       dockerfile: Dockerfile.inspector
     ports:
       - "6274:6274"
+      - "6275:6275"
     volumes:
       - ./app_backend:/app
