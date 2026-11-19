@@ -2,22 +2,36 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
+# Install system dependencies and Node.js 22
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    gnupg \
     gcc \
-    nodejs \
-    npm \
+    libpq-dev \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
+       | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" \
+       > /etc/apt/sources.list.d/nodesource.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-COPY req.txt ./
+# Install Python dependencies
+COPY req.txt .
+
 RUN pip install --no-cache-dir -r req.txt
 
+# Copy application
 COPY . .
 
-EXPOSE 6275
-EXPOSE 6274
+# MCP Inspector ports
+EXPOSE 6274 6275
 
+# Development-only: disables Inspector authentication
 ENV DANGEROUSLY_OMIT_AUTH=true
+ENV MCP_INSPECTOR_SECRET_STORE=memory
 
-# Clean JSON array execution
+# Launch MCP Inspector
 CMD ["fastmcp", "dev", "inspector", "main.py:mcp"]

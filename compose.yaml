@@ -37,7 +37,11 @@ services:
       context: ./app_backend
       dockerfile: Dockerfile.inspector
     ports:
-      - "6274:6274"
-      - "6275:6275"
+      - "127.0.0.1:6274:6274"
+      - "127.0.0.1:6275:6275"
     volumes:
       - ./app_backend:/app
+    environment:
+      HOST: 0.0.0.0
+      DANGEROUSLY_BIND_ALL_INTERFACES: "true"
+      MCP_INSPECTOR_SECRET_STORE: memory
