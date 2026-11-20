@@ -51,6 +51,8 @@ referencing==0.37.0
 rich==15.0.0
 rich-rst==2.2.0
 rpds-py==2026.9.1
+SQLAlchemy==2.1.9
+sqlmodel==0.0.50
 sse-starlette==3.7.0
 starlette==1.10.0
 truststore==0.10.5
