@@ -18,7 +18,6 @@ middleware = [
         expose_headers=["mcp-session-id"],
     )
 ]
-
 mcp.http_app(middleware=middleware)
 
 light_obj: LightDoc = Light()

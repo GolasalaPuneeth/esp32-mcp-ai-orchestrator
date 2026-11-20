@@ -56,6 +56,4 @@ class Light(LightDoc):
     @tool()
     async def blink_light(self, times):
         print("[blink_light] ------> ",times)
-        DEVICE_STATUS["current_status"]="blink"
-        DEVICE_STATUS["last_change"]= datetime.now().isoformat()
         return True
