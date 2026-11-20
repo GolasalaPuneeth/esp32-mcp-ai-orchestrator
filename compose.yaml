@@ -16,7 +16,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Admin123
-      POSTGRES_DB: feedback_database
+      POSTGRES_DB: mcp_base
 
     ports:
       - "5432:5432"
@@ -26,7 +26,7 @@ services:
 
     shm_size: 128mb
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d feedback_database"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mcp_base"]
       interval: 5s
       timeout: 5s
       retries: 10
