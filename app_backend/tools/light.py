@@ -10,7 +10,7 @@ class LightDoc(ABC):
     """Abstract interface defining standard lighting capabilities."""
     
     @abstractmethod
-    async def turn_on_light(self, switch: bool) -> bool:
+    async def turn_control_light(self, switch: bool) -> bool:
         """
         Turn the physical light ON or OFF.
         
@@ -52,13 +52,14 @@ class Light(LightDoc):
         await self.mqtt.disconnect()
 
     @tool()  
-    async def turn_on_light(self, switch: bool) -> bool:
-        return await self.mqtt.publish_command("ON")
+    async def turn_control_light(self, switch: bool) -> bool:
+        if switch:
+            return await self.mqtt.publish_command("ON")
+        return await self.mqtt.publish_command("OFF")
 
     @tool()
     async def get_status(self) -> str:
         print("[get_status] ------> ")
-        return json.dumps(DEVICE_STATUS, indent=2)
 
     @tool()
     async def blink_light(self, times):
