@@ -7,121 +7,110 @@ import aiomqtt
 class MqttTool:
 
     def __init__(self, broker: str, port: int):
-
         self.broker = broker
         self.port = port
         self.timeout = 3.0
+        self.command_topic = "esp/light"
+        self.ack_topic = "esp/ack"
+        self.client = None
+        self.commands = {
+            "ON": {"light": "ON"},
+            "OFF": {"light": "OFF"}
+        }
 
-        self.light_topic = "esp/light"
-        self.light_ack = "esp/ack"
+    # ----------------------------------
+    # Connection Management
+    # ----------------------------------
 
-        self.light_on_load = json.dumps({"light": "ON"})
-        self.light_off_load = json.dumps({"light": "OFF"})
-
+    async def connect(self):
         self.client = aiomqtt.Client(
             hostname=self.broker,
             port=self.port
         )
-
-    async def __aenter__(self):
         await self.client.__aenter__()
-        return self
+        print("[MQTT] Connected successfully")
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.client.__aexit__(exc_type, exc_val, exc_tb)
+    async def disconnect(self):
+        if self.client is not None:
+            await self.client.__aexit__(None, None, None)
+            self.client = None
+            print("[MQTT] Disconnected")
 
-    async def _wait_for_ack(self) -> dict:
+    # ----------------------------------
+    # ACK Listener
+    # ----------------------------------
 
+    async def receive_ack(self):
         async for message in self.client.messages:
-            if str(message.topic) == self.light_ack:
-                raw = message.payload.decode()
-                try:
-                    return json.loads(raw)
-                except json.JSONDecodeError:
-                    return {"raw": raw}
+            if str(message.topic) != self.ack_topic:
+                continue
+            payload = message.payload.decode()
+            try:
+                return json.loads(payload)
+            except json.JSONDecodeError:
+                return {"raw": payload}
         return {}
 
-    async def publish_and_wait_ack(
-        self,
-        pub_topic: str,
-        ack_topic: str,
-        command_payload: str,
-        timeout: float = 3.0
-    ):
+    # ----------------------------------
+    # Publish and Receive ACK
+    # ----------------------------------
+
+    async def publish_command(self, command: str):
+        if self.client is None:
+            raise RuntimeError("MQTT client is not connected")
+        payload = json.dumps(self.commands[command])
         try:
             # Subscribe before publishing
-            await self.client.subscribe(self.light_ack, qos=1)
+            await self.client.subscribe(
+                self.ack_topic,
+                qos=1
+            )
 
             # Start ACK listener
             ack_task = asyncio.create_task(
-                self._wait_for_ack()
+                self.receive_ack()
             )
 
             try:
                 # Publish command
                 await self.client.publish(
-                    pub_topic,
-                    payload=command_payload,
+                    self.command_topic,
+                    payload=payload,
                     qos=1
                 )
-
-                print(f"Published {command_payload} -> {pub_topic}")
-
-                ack = await asyncio.wait_for(
+                print(f"[MQTT] Published: {payload}")
+                # Wait for ACK
+                response = await asyncio.wait_for(
                     ack_task,
-                    timeout=timeout
+                    timeout=self.timeout
                 )
-
-                print(f"Received ACK on {ack_topic}: {ack}")
-
-                return ack
-
-            except asyncio.TimeoutError:
-                print(
-                    f"Timed out after {timeout}s "
-                    f"waiting for ACK on {ack_topic}"
-                )
-                return None
+                print(f"[MQTT] ACK: {response}")
+                return response
 
             finally:
                 if not ack_task.done():
                     ack_task.cancel()
-
                 await asyncio.gather(
                     ack_task,
                     return_exceptions=True
                 )
 
-        except aiomqtt.MqttError as exc:
-            print(f"MQTT error: {exc}")
+        except asyncio.TimeoutError:
+            print("[MQTT] ACK timeout")
             return None
 
-    async def light_on(self):
+        except aiomqtt.MqttError as exc:
+            print(f"[MQTT] Error: {exc}")
+            return None
 
-        return await self.publish_and_wait_ack(
-            pub_topic=self.light_topic,
-            ack_topic=self.light_ack,
-            command_payload=self.light_on_load,
-            timeout=self.timeout
-        )
+    # ----------------------------------
+    # Light Operations
+    # ----------------------------------
 
-    async def light_off(self):
+    # async def light_on(self):
 
-        return await self.publish_and_wait_ack(
-            pub_topic=self.light_topic,
-            ack_topic=self.light_ack,
-            command_payload=self.light_off_load,
-            timeout=self.timeout
-        )
+    #     return await self.publish_command("ON")
 
+    # async def light_off(self):
 
-async def main():
-
-    async with MqttTool("localhost", 1883) as mqtt:
-
-        response = await mqtt.light_on()
-        print("Response:", response)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
+    #     return await self.publish_command("OFF")

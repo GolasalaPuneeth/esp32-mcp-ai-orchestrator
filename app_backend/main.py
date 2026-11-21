@@ -2,6 +2,15 @@ from fastmcp import FastMCP
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from tools import LightDoc,Light,MailServiceDoc,MailService
+from contextlib import asynccontextmanager
+
+light_obj: LightDoc = Light()
+
+@asynccontextmanager
+async def lifespan(server):
+    async with light_obj:
+        yield
+
 mcp = FastMCP("My MCP Server")
 
 middleware = [
@@ -20,7 +29,7 @@ middleware = [
 ]
 mcp.http_app(middleware=middleware)
 
-light_obj: LightDoc = Light()
+# light_obj: LightDoc = Light()
 mail_obj: MailServiceDoc = MailService()
 
 mcp.add_tool(light_obj.turn_on_light)

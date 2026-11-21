@@ -1,13 +1,10 @@
 from abc import ABC, abstractmethod
 from fastmcp.tools import tool
 from datetime import datetime
+from AppUtils import MqttTool
 import json
 
-# light = FastMCP("Light Controller")
-DEVICE_STATUS = {
-    "light_current_status":"off",
-    "last_change": None
-}
+
 
 class LightDoc(ABC):
     """Abstract interface defining standard lighting capabilities."""
@@ -39,14 +36,24 @@ class LightDoc(ABC):
 
 
 class Light(LightDoc):
-    
+    def __init__(self):
+        self.mqtt = MqttTool("localhost", 1883)
+
+    async def __aenter__(self):
+        try:
+            await self.mqtt.connect()
+            return self
+
+        except Exception:
+            await self.mqtt.disconnect()
+            raise
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.mqtt.disconnect()
+
     @tool()  
     async def turn_on_light(self, switch: bool) -> bool:
-        print("[get_status] ------> ",switch)
-        DEVICE_STATUS["current_status"]="on"
-        DEVICE_STATUS["last_change"]= datetime.now().isoformat()
-        print(DEVICE_STATUS)
-        return True
+        return await self.mqtt.publish_command("ON")
 
     @tool()
     async def get_status(self) -> str:
