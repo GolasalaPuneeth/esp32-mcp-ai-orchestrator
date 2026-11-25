@@ -37,7 +37,7 @@ class LightDoc(ABC):
 
 class Light(LightDoc):
     def __init__(self):
-        self.mqtt = MqttTool("localhost", 1883)
+        self.mqtt = MqttTool("mosquitto_mqtt", 1883)
 
     async def __aenter__(self):
         try:
