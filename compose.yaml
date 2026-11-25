@@ -8,39 +8,39 @@ services:
     volumes:
       - ./mosquitto_mqtt:/mosquitto
 
-  db:
-    image: postgres:18
-    container_name: postgres_db
-    restart: always
+  # db:
+  #   image: postgres:18
+  #   container_name: postgres_db
+  #   restart: always
 
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Admin123
-      POSTGRES_DB: mcp_base
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: Admin123
+  #     POSTGRES_DB: mcp_base
 
-    ports:
-      - "5432:5432"
+  #   ports:
+  #     - "5432:5432"
 
-    volumes:
-      - ./postgres:/var/lib/postgresql
+  #   volumes:
+  #     - ./postgres:/var/lib/postgresql
 
-    shm_size: 128mb
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d mcp_base"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
-    ports:
-      - "5050:80"
-    volumes:
-      - ./pgadmin_data:/var/lib/pgadmin
+  #   shm_size: 128mb
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres -d mcp_base"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: pgadmin
+  #   restart: unless-stopped
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@example.com
+  #     PGADMIN_DEFAULT_PASSWORD: admin123
+  #   ports:
+  #     - "5050:80"
+  #   volumes:
+  #     - ./pgadmin_data:/var/lib/pgadmin
   mailpit:
     image: axllent/mailpit:latest
     container_name: mailpit

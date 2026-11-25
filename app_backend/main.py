@@ -32,7 +32,7 @@ mcp.http_app(middleware=middleware)
 # light_obj: LightDoc = Light()
 mail_obj: MailServiceDoc = MailService()
 
-mcp.add_tool(light_obj.turn_on_light)
+mcp.add_tool(light_obj.turn_control_light)
 mcp.add_tool(light_obj.get_status)
 mcp.add_tool(light_obj.blink_light)
 mcp.add_tool(mail_obj.send_html_email)
