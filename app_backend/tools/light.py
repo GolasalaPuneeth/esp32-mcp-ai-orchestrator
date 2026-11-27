@@ -59,9 +59,20 @@ class Light(LightDoc):
 
     @tool()
     async def get_status(self) -> str:
-        print("[get_status] ------> ")
+        """Report whether the MQTT connection is available."""
+        if self.mqtt.client is None:
+            return "disconnected"
+        return "connected"
 
     @tool()
-    async def blink_light(self, times):
-        print("[blink_light] ------> ",times)
+    async def blink_light(self, times: int) -> bool:
+        """Blink the light by alternating OFF and ON commands."""
+        if times < 1:
+            return False
+
+        for _ in range(times):
+            if not await self.mqtt.publish_command("ON"):
+                return False
+            if not await self.mqtt.publish_command("OFF"):
+                return False
         return True
