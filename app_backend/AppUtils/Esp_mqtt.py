@@ -9,7 +9,6 @@ pub_tpk = os.getenv('TOPIC_PUB')
 ack_tpk = os.getenv('TOPIC_ACK')
 
 async def send_mqtt_command(
-
     payload: str,
 ) -> str:
     """Publish a command and wait up to 3 seconds for a response.
