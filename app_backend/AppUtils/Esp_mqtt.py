@@ -5,9 +5,11 @@ import os
 
 load_dotenv()
 
+pub_tpk = os.getenv('TOPIC_PUB')
+ack_tpk = os.getenv('TOPIC_ACK')
+
 async def send_mqtt_command(
-    top_pub: str,
-    top_ack: str,
+
     payload: str,
 ) -> str:
     """Publish a command and wait up to 3 seconds for a response.
@@ -19,11 +21,11 @@ async def send_mqtt_command(
     try:
         async with asyncio.timeout(3):
             async with aiomqtt.Client(hostname="localhost", port=1883) as client:
-                await client.subscribe(top_ack)
-                await client.publish(top_pub, payload=payload)
+                await client.subscribe(ack_tpk)
+                await client.publish(pub_tpk, payload=payload)
 
                 async for message in client.messages:
-                    if message.topic.matches(top_ack):
+                    if message.topic.matches(ack_tpk):
                         return message.payload.decode(errors="replace")
     except TimeoutError:
         return "Device not reachable"
